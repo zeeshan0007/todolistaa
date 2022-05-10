@@ -13,7 +13,8 @@ export default class App extends Component {
 				{id:2, action: 'Dentist at 5pm', done: false },
 				{id:3, action: 'Go to Gym', done: false },
 			],
-			newTodo: '',
+			newTodo : '',
+			updateId:'',
 		};
 	}
 
@@ -22,32 +23,46 @@ export default class App extends Component {
 	};
 
 	HandleAddClick = () => {
-    
-      this.setState({
-        todoItems: [
-          ...this.state.todoItems,
-          { action: this.state.newTodo, done: false },
-        ],
-      });
+			if(this.state.newTodo===''){
+				alert('can not assign empty')
+				return;
+			}
+			if(this.state.updateId!==''){
+				//console.log(this.state.updateId)
+				const update=this.state.todoItems.filter(item=>item.id===this.state.updateId);
+				update[0].action=this.state.newTodo
+					const tst= this.state.todoItems.map((item,index) => {
+					if(item.id === this.state.todoItems) {
+							return update[0];
+						}
+						return item;
+					})
+				this.setState({todoItems:	tst,updateId:'', newTodo: ''})
+
+			}else {  this.setState({
+				todoItems: [
+				...this.state.todoItems,
+				{id: this.getTime(), action: this.state.newTodo, done: false },
+				],
+				updateId:''
+			});}
 	};
 
-  // setUpdate(key){
-  //   console.log("items:"+this.state.todoItems);
-  //   const items = this.state.items;
-  //   items.map(item=>{      
-  //     if(item.key===key){
-  //       console.log(item.key +"    "+key)
-  //       item.text= text;
-  //     }
-  //   })
-  //   this.setState({
-  //     items: items
-  //   })
-  // }
+  
+		test=(id)=>{
+		
+			const val =this.state.todoItems;
+			const update=val.filter(item=>item.id===id);
+			this.setState({newTodo:update[0].action, updateId:id})
+		}
 
+		handleExit=()=>{
+
+		}
+		
 	todoRows = () =>
-		this.state.todoItems.map((item) => (
-			<TodoRows key={item.id} item={item} callback={this.toggleDone} fooDelete={(todo) => this.handleDelete(todo)} />
+		this.state.todoItems.map((item, index) => (
+			<TodoRows index={index} moveUp={this.moveUp} moveDown={this.moveDown} test={this.test} key={item.id} item={item} callback={this.toggleDone} fooDelete={(todo) => this.handleDelete(todo)} />
 		));
 
 	toggleDone = (todo) =>
@@ -58,7 +73,7 @@ export default class App extends Component {
 		});
 
     handleDelete = todo => {
-      console.log(this.state.todoItems);
+     // console.log(this.state.todoItems);
      
       const todos = this.state.todoItems.filter((t) => {
           return t.id !== todo
@@ -74,21 +89,79 @@ export default class App extends Component {
       let d = new Date();
       var n = d.getTime();
       return n;
-  }
+    }
 
+	moveUp=(index)=>{
+		if(index===0){
+			let oldData = this.state.todoItems
+			oldData.push(oldData.splice(index, 1)[0]);
+			this.setState(
+				{todoItems:oldData}
+			)
+
+		}else if(index > 0) {
+			let oldData = this.state.todoItems
+			let temp = oldData[index]//clicked object wwill be here 
+			console.log(temp)
+			oldData[index] = oldData[index-1]
+			oldData[index-1]=temp
+			//console.log(oldData)
+			
+			this.setState(
+				{todoItems:oldData}
+			)
+			}
+		
+	}
+	moveDown=(index)=>{
+		var i=this.state.todoItems.length-1
+		if (index === i)
+		{
+			console.log('move is called', i)
+			let oldData = this.state.todoItems
+			// oldData.push(oldData.unshift(index, 1)[0]);
+			let lastVal=oldData.splice(i)
+			console.log(lastVal)
+			let data=oldData.unshift(...lastVal)
+			console.log(data)
+			this.setState(
+				{todoItems:oldData}
+			)
+		}
+		else if(index < this.state.todoItems.length-1){
+			let oldData = this.state.todoItems
+			let temp = oldData[index]
+			oldData[index] = oldData[index+1]
+			oldData[index+1]=temp
+			console.log(oldData)
+			
+			this.setState(
+				{todoItems:oldData}
+			)
+			}
+	
+
+	}
 	render = () => (
-		<div className="container">
+			<div className="container">
 			<div className="row">
 				<Navbar name={this.state.userName} />
 				<div className="col-12">
 					<input
 						className="form-control"
-						value={this.state.newToDo}
+						value={this.state.newTodo}
 						onChange={this.updateValue}
 					/>
+					
 					<button className="btn btn-primary" onClick={this.HandleAddClick}>
-						Add
+						{this.state.updateId ? 'Update' : 'Add'}
 					</button>
+					{this.state.updateId && <button
+						className="back"
+						onClick={() => this.setState({updateId:'', newTodo: ''})}
+						type="button">
+						Cancel
+             		 </button>}
 				</div>
 				<div className="col-12">
 					<table className="table">
@@ -104,5 +177,7 @@ export default class App extends Component {
 				</div>
 			</div>
 		</div>
+	
+		
 	);
 }
